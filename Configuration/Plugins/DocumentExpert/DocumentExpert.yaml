@@ -1,0 +1,6 @@
+name: DocumentExpert
+description: |
+  This plugin provides a set of tools to help you write documents.
+functions:
+  semanticFunctions:
+   - ./Prompts/HelloWorld.prompt

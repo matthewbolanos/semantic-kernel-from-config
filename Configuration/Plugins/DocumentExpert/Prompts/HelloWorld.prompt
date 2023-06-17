@@ -1,0 +1,5 @@
+name: HelloWorld
+model: gpt3
+prompt: Tell me a joke about a dinosaur
+completion:
+  temperature: 1

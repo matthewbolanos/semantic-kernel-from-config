@@ -1,0 +1,15 @@
+models:
+  ada:
+    modelId: text-ada-001
+    endpointType: text-completion
+    connection: openAI
+  gpt3:
+    modelId: text-davinci-003
+    endpointType: text-completion
+    connection: openAI
+connections:
+  openAI:
+    serviceType: OpenAI
+plugins:
+  - ../../Plugins/DocumentExpert/DocumentExpert.yaml
+logLevel: 4

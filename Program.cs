@@ -6,6 +6,6 @@ var agentDirectory = Path.Combine(
 );
 ConsoleAgent agent = new ConsoleAgent(agentDirectory);
 
-await agent.SendMessageAsync("This is a test");
+await agent.SendMessageAsync("Summarize this document: https://learn.microsoft.com/en-us/semantic-kernel/");
 
 

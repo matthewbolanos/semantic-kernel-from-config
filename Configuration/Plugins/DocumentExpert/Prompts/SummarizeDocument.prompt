@@ -1,0 +1,14 @@
+name: SummarizeDocument
+description: |
+  Summarizes a document.
+model: gpt3
+prompt: |
+  Summarize the following document: {{$input}}
+
+  Summary: 
+completion:
+  temperature: 1
+input:
+  parameters:
+    - name: input
+      description: The text of the document to summarize.

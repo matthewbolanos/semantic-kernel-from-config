@@ -1,10 +1,10 @@
 models:
-  ada:
-    modelId: text-ada-001
-    endpointType: 0
-    connection: openAI
   gpt3:
     modelId: text-davinci-003
+    endpointType: 0
+    connection: openAI
+  ada:
+    modelId: text-ada-001
     endpointType: 0
     connection: openAI
 connections:

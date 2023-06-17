@@ -19,27 +19,45 @@ public static class ImportPluginFromConfigExtension
         ITrustService? trustService = null)
     {
 
-        var promptConfig = PluginConfig.FromFile(pluginConfigFile);
+        var pluginConfig = PluginConfig.FromFile(pluginConfigFile);
         List<ISKFunction> Functions = new List<ISKFunction> { };
 
         var pluginDirectory = new FileInfo(pluginConfigFile).Directory!.FullName;
 
-        if (promptConfig.Functions?.SemanticFunctions != null)
+        if (pluginConfig.Functions?.SemanticFunctions != null)
         {
-            foreach (var semanticFunctionFile in promptConfig.Functions.SemanticFunctions)
+            foreach (var semanticFunctionFile in pluginConfig.Functions.SemanticFunctions)
             {
                 var f = kernel.ImportSemanticFunctionFromConfig(
                     Path.Combine(pluginDirectory, semanticFunctionFile),
-                    pluginName: promptConfig.Name,
+                    pluginName: pluginConfig.Name,
                     trustService: trustService
                 );
                 Functions.Add(f);
             }
         }
 
+        if (pluginConfig.Functions?.CSharpFunctions != null)
+        {
+            foreach (var cSharpFunctionFile in pluginConfig.Functions.CSharpFunctions)
+            {
+                var functions = kernel.ImportNativeFunctionsFromDll(
+                    cSharpFunctionFile,
+                    pluginName: pluginConfig.Name,
+                    trustService: trustService
+                );
+
+                // loop over the functions and add them to the list
+                foreach (var f in functions)
+                {
+                    Functions.Add(f.Value);
+                }
+            }
+        }
+
         return new Plugin
         {
-            Name = promptConfig.Name,
+            Name = pluginConfig.Name,
             Functions = Functions
         };
     }

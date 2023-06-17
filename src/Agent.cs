@@ -140,9 +140,8 @@ public class ConsoleAgent
 
     public async Task SendMessageAsync(string message)
     {
-        var f = kernel.Skills.GetFunction("DocumentExpert", "HelloWorld");
-        var result = await f.InvokeAsync();
+        currentPlan = await planner.CreatePlanAsync(message);
 
-        Console.WriteLine(result);
+        Console.WriteLine(currentPlan.ToJson());
     }
 }

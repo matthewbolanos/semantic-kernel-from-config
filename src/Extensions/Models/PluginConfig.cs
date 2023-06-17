@@ -22,6 +22,18 @@ public class PluginConfig
     {
         [YamlMember(Alias = "semanticFunctions")]
         public string[]? SemanticFunctions { get; set; }
+
+        [YamlMember(Alias = "cSharpFunctions")]
+        public cSharpFunctionsConfig[]? CSharpFunctions { get; set; }
+
+        public class cSharpFunctionsConfig
+        {
+            [YamlMember(Alias = "dll")]
+            public string? dll { get; set; }
+
+            [YamlMember(Alias = "className")]
+            public string? ClassName { get; set; }
+        }
     }
 
     public static PluginConfig FromFile(string file)

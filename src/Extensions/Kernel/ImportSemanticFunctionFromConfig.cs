@@ -15,6 +15,12 @@ public static class ImportPromptFromConfigExtension
         string? pluginName = null,
         ITrustService? trustService = null)
     {
+        // Check if the file exists
+        if (!File.Exists(promptConfigFile))
+        {
+            throw new Exception("File at path " + promptConfigFile + " not found");
+        }
+
         var promptConfig = PromptConfig.FromFile(promptConfigFile);
 
         var config = new PromptTemplateConfig

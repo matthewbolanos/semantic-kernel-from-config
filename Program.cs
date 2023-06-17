@@ -1,15 +1,11 @@
-﻿using Microsoft.SemanticKernel;
-using PowerMatt.SKFromConfig.Extensions;
+﻿using PowerMatt.SKFromConfig.Extensions.Agent;
 
 var agentDirectory = Path.Combine(
     System.IO.Directory.GetCurrentDirectory(),
     "Configuration/Agents/DocumentExpert"
 );
-IKernel kernel = new KernelBuilder()
-    .BuildWithAgentConfig(agentDirectory);
+ConsoleAgent agent = new ConsoleAgent(agentDirectory);
 
-var f = kernel.Skills.GetFunction("DocumentExpert", "HelloWorld");
-var result = await f.InvokeAsync();
+await agent.SendMessageAsync("This is a test");
 
-Console.WriteLine(result);
 

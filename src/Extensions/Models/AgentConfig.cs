@@ -28,7 +28,7 @@ public class AgentConfig
         public string? ModelId { get; set; }
 
         [YamlMember(Alias = "endpointType")]
-        public string? EndpointType { get; set; }
+        public EndpointType? EndpointType { get; set; }
 
         [YamlMember(Alias = "connection")]
         public string? Connection { get; set; }
@@ -37,7 +37,7 @@ public class AgentConfig
     public class ConnectionConfig
     {
         [YamlMember(Alias = "serviceType")]
-        public string? ServiceType { get; set; }
+        public ServiceType? ServiceType { get; set; }
 
         [YamlMember(Alias = "endPoint")]
         public string? Endpoint { get; set; }
@@ -53,6 +53,12 @@ public class AgentConfig
     {
         // Load the default yaml file for the agent
         var defaultConfigFile = Path.Combine(directory, $"agent.yaml");
+
+        // Check if file exists
+        if (!File.Exists(defaultConfigFile))
+        {
+            throw new FileNotFoundException($"Agent configuration file not found at {defaultConfigFile}");
+        }
         var defaultConfig = FromFile(defaultConfigFile);
 
         // Load the environment specific yaml file for the agent if it exists
@@ -63,7 +69,7 @@ public class AgentConfig
         var mergedConfig = MergeUtilities.MergeObjects(defaultConfig, envConfig);
 
         // Return or store the merged configuration object
-        return mergedConfig;
+        return mergedConfig!;
     }
 
     public static AgentConfig FromFile(string file)
@@ -81,14 +87,14 @@ public class AgentConfig
     }
 }
 
-internal static class ServiceTypes
+public enum ServiceType
 {
-    internal const string OpenAI = "OPENAI";
-    internal const string AzureOpenAI = "AZUREOPENAI";
+    OpenAI = 0,
+    AzureOpenAI = 1
 }
 
-internal static class EndpointTypes
+public enum EndpointType
 {
-    internal const string TextCompletion = "text-completion";
-    internal const string ChatCompletion = "chat-completion";
+    TextCompletion = 0,
+    ChatCompletion = 1
 }

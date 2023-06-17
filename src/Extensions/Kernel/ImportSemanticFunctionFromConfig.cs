@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using PowerMatt.SKFromConfig.Extensions.Models;
 
-namespace PowerMatt.SKFromConfig.Extensions;
+namespace PowerMatt.SKFromConfig.Extensions.Kernel;
 
 public static class ImportPromptFromConfigExtension
 {

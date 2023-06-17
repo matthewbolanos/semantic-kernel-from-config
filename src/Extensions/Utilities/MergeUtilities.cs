@@ -1,6 +1,8 @@
 
 using System.Reflection;
 
+namespace PowerMatt.SKFromConfig.Extensions;
+
 public class MergeUtilities
 {
     public static T MergeObjects<T>(T defaultObj, T environmentObj)

@@ -1,11 +1,11 @@
 models:
   ada:
     modelId: text-ada-001
-    endpointType: text-completion
+    endpointType: 0
     connection: openAI
   gpt3:
     modelId: text-davinci-003
-    endpointType: text-completion
+    endpointType: 0
     connection: openAI
 connections:
   openAI:

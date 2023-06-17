@@ -3,13 +3,13 @@ using Microsoft.SemanticKernel.Planning;
 
 namespace PowerMatt.SKFromConfig.Extensions.Planner;
 
-public class SequentialPlanner : IPlanner
+public class ActionPlanner : IPlanner
 {
-    private Microsoft.SemanticKernel.Planning.SequentialPlanner planner;
+    private Microsoft.SemanticKernel.Planning.ActionPlanner planner;
 
-    public SequentialPlanner(IKernel kernel)
+    public ActionPlanner(IKernel kernel)
     {
-        planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
+        planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel);
     }
 
     public async Task<Plan> CreatePlanAsync(string goal)

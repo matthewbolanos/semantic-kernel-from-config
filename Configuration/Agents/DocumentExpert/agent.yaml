@@ -10,6 +10,8 @@ models:
 connections:
   openAI:
     serviceType: OpenAI
+planner:
+  type: 1
 plugins:
   - ../../Plugins/DocumentExpert/DocumentExpert.yaml
 logLevel: 4

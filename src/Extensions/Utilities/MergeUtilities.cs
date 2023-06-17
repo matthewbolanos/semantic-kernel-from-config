@@ -3,6 +3,11 @@ using System.Reflection;
 
 namespace PowerMatt.SKFromConfig.Extensions;
 
+#pragma warning disable CS8600
+#pragma warning disable CS8601  
+#pragma warning disable CS8602 
+#pragma warning disable CS8614 
+
 public class MergeUtilities
 {
     public static T MergeObjects<T>(T defaultObj, T environmentObj)

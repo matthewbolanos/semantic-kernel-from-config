@@ -135,7 +135,26 @@ public class ConsoleAgent
             }
         }
 
-        planner = new SequentialPlanner(kernel);
+        // Check if there is a planner type
+        if (agentConfig.Planner?.Type == null)
+        {
+            throw new ArgumentException("No planner type found in agent config.");
+        }
+
+        // Create planner
+        switch (agentConfig.Planner.Type)
+        {
+            case PlannerType.ActionPlanner:
+                planner = new ActionPlanner(kernel);
+                break;
+
+            case PlannerType.SequentialPlanner:
+                planner = new SequentialPlanner(kernel);
+                break;
+
+            default:
+                throw new ArgumentException($"Invalid planner type value: {agentConfig.Planner.Type}");
+        }
     }
 
     public async Task SendMessageAsync(string message)

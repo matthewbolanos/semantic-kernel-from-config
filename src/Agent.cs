@@ -15,6 +15,8 @@ public class ConsoleAgent
     private Microsoft.SemanticKernel.Planning.Plan? currentPlan;
     private ChatView? chatView;
 
+    private ILogger<ConsoleAgent> logger;
+
     public ConsoleAgent(string agentDirectory)
     {
         // Create kernel builder
@@ -118,7 +120,8 @@ public class ConsoleAgent
                     .SetMinimumLevel(agentConfig.LogLevel ?? LogLevel.Warning)
                     .AddDebug();
             });
-            kernelBuilder.WithLogger(loggerFactory.CreateLogger<IKernel>());
+            logger = loggerFactory.CreateLogger<ConsoleAgent>();
+            kernelBuilder.WithLogger(loggerFactory.CreateLogger<ConsoleAgent>());
         }
 
         // Build kernel
@@ -144,6 +147,10 @@ public class ConsoleAgent
         // Create planner
         switch (agentConfig.Planner.Type)
         {
+            case PlannerType.MockPlanner:
+                planner = new MockPlanner(kernel);
+                break;
+
             case PlannerType.ActionPlanner:
                 planner = new ActionPlanner(kernel);
                 break;
@@ -175,8 +182,9 @@ public class ConsoleAgent
     public async Task SendMessageAsync(string message)
     {
         currentPlan = await planner.CreatePlanAsync(message);
-        var result = await currentPlan.InvokeAsync();
+        logger.LogTrace("Plan created: {plan}", currentPlan.ToJson(true));
 
+        var result = await currentPlan.InvokeAsync();
         chatView!.Respond(result.ToString());
     }
 }

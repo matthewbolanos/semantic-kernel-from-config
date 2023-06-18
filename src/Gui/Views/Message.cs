@@ -46,16 +46,18 @@ public class Message
     {
         get
         {
+            int parentWidth = _parentView.Frame.Width;
+
             if (_text.Length + 1 < _sender.Length)
             {
                 return _sender.Length + 1 + 2;
             }
-            if (_text.Length < 50)
+            if (_text.Length < parentWidth / 4 * 3)
             {
                 return _text.Length + 2;
             }
 
-            return 50;
+            return (int)(parentWidth / 4 * 3);
         }
     }
 

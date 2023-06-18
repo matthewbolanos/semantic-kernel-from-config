@@ -11,7 +11,8 @@ connections:
   openAI:
     serviceType: OpenAI
 planner:
-  type: 1
+  type: 0
 plugins:
-  - ../../Plugins/DocumentExpert/DocumentExpert.yaml
+  #- ../../Plugins/DocumentExpert/DocumentExpert.yaml
+  - ../../Plugins/Communicator/Communicator.yaml
 logLevel: 6

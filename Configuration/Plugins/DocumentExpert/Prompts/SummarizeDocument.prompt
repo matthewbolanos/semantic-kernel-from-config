@@ -1,6 +1,6 @@
 name: SummarizeDocument
 description: |
-  Summarizes a document.
+  After given a document in text form, it will return a summary of it.
 model: gpt3
 prompt: |
   Summarize the following document: {{$input}}

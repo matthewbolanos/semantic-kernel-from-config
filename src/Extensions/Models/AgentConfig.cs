@@ -110,6 +110,7 @@ public enum EndpointType
 
 public enum PlannerType
 {
-    ActionPlanner = 0,
-    SequentialPlanner = 1
+    MockPlanner = 0,
+    ActionPlanner = 1,
+    SequentialPlanner = 2
 }

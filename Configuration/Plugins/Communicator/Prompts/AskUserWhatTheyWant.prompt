@@ -1,12 +1,8 @@
 name: AskUserWhatTheyWant
-description: |
-  If you are unsure what the user wants, use this function to ask them to clarify. Do not add steps after this one.
+description: |-
+  If you are unsure what the user wants, use this function to ask them to clarify. Use the Communicator.GetUserResponse function afterwards to collect the user's response.
 model: gpt3
-prompt: |
-  The bot is confused by what the user wants. The bot will ask them to clarify.
-
-  User: {{$input}}
-  Bot: 
+prompt: "The bot is confused by what the user wants. The bot will ask them to clarify.\n\nUser: {{$input}}\nBot: "
 completion:
   temperature: 1
 input:

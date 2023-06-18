@@ -2,20 +2,21 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using PowerMatt.SKFromConfig.Extensions.Kernel;
 using PowerMatt.SKFromConfig.Extensions.Models;
-using PowerMatt.SKFromConfig.Extensions.Planner;
 using PowerMatt.Gui.Views;
 using Terminal.Gui;
+using Microsoft.SemanticKernel.SkillDefinition;
+using System.Collections.Concurrent;
 
 namespace PowerMatt.SKFromConfig.Extensions.Agent;
 
 public class ConsoleAgent
 {
     private IKernel kernel;
-    private IPlanner planner;
-    private Microsoft.SemanticKernel.Planning.Plan? currentPlan;
+    private ISKFunction mainFunction;
     private ChatView? chatView;
+    private ConcurrentDictionary<string, ContextThread> contextThreads = new ConcurrentDictionary<string, ContextThread> { };
+    private ILogger<ConsoleAgent>? logger;
 
-    private ILogger<ConsoleAgent> logger;
 
     public ConsoleAgent(string agentDirectory)
     {
@@ -139,29 +140,14 @@ public class ConsoleAgent
         }
 
         // Check if there is a planner type
-        if (agentConfig.Planner?.Type == null)
+        if (agentConfig.MainFunction == null)
         {
-            throw new ArgumentException("No planner type found in agent config.");
+            throw new ArgumentException("No main function found in agent config.");
         }
 
-        // Create planner
-        switch (agentConfig.Planner.Type)
-        {
-            case PlannerType.MockPlanner:
-                planner = new MockPlanner(kernel);
-                break;
-
-            case PlannerType.ActionPlanner:
-                planner = new ActionPlanner(kernel);
-                break;
-
-            case PlannerType.SequentialPlanner:
-                planner = new SequentialPlanner(kernel);
-                break;
-
-            default:
-                throw new ArgumentException($"Invalid planner type value: {agentConfig.Planner.Type}");
-        }
+        // Set main function
+        string[] mainFunctionParts = agentConfig.MainFunction.Split('.');
+        mainFunction = kernel.Skills.GetFunction(mainFunctionParts[0], mainFunctionParts[1])!;
     }
 
     public void Start()
@@ -181,10 +167,35 @@ public class ConsoleAgent
 
     public async Task SendMessageAsync(string message)
     {
-        currentPlan = await planner.CreatePlanAsync(message);
-        logger.LogTrace("Plan created: {plan}", currentPlan.ToJson(true));
+        // Check if any context threads should receive the message
+        bool messageReceived = false;
+        foreach (var ct in contextThreads)
+        {
+            if (ct.Value.IsWaitingForUserInput())
+            {
+                ct.Value.ReceiveMessage(message);
+                messageReceived = true;
+            }
+        }
 
-        var result = await currentPlan.InvokeAsync();
-        chatView!.Respond(result.ToString());
+        // If not, send to main function
+        if (!messageReceived)
+        {
+            // create new context thread
+            var context = kernel.CreateNewContext();
+            context["input"] = message;
+            var contextThread = new ContextThread(context, chatView!.Respond);
+
+            // Create random ID
+            string id = Guid.NewGuid().ToString();
+
+            // add context to concurrent dictionary
+            contextThreads.TryAdd(id, contextThread);
+
+            await contextThread.StartAsync();
+
+            // remove context from concurrent dictionary
+            contextThreads.TryRemove(id, out _);
+        }
     }
 }

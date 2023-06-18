@@ -21,10 +21,19 @@ public class PluginConfig
     public class FunctionsConfig
     {
         [YamlMember(Alias = "semanticFunctions")]
-        public string[]? SemanticFunctions { get; set; }
+        public semanticFunctionsConfig[]? SemanticFunctions { get; set; }
 
         [YamlMember(Alias = "cSharpFunctions")]
         public cSharpFunctionsConfig[]? CSharpFunctions { get; set; }
+
+        public class semanticFunctionsConfig
+        {
+            [YamlMember(Alias = "path")]
+            public string? path { get; set; }
+
+            [YamlMember(Alias = "exposeToPlanner")]
+            public bool ExposeToPlanner { get; set; } = true;
+        }
 
         public class cSharpFunctionsConfig
         {
@@ -33,6 +42,9 @@ public class PluginConfig
 
             [YamlMember(Alias = "className")]
             public string? ClassName { get; set; }
+
+            [YamlMember(Alias = "exposeToPlanner")]
+            public bool? ExposeToPlanner { get; set; }
         }
     }
 

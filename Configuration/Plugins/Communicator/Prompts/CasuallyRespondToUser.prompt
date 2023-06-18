@@ -1,12 +1,8 @@
 name: CasuallyRespondToUser
-description: |
-  Will return a conversational response to the user's last message. Do not add steps after this one.
+description: |-
+  Will return a conversational response to the user's last message.
 model: gpt3
-prompt: |
-  The bot is a friendly, helpful conversationalist.
-
-  User: {{$input}}
-  Bot: 
+prompt: "The bot is a friendly, helpful conversationalist.\n\nUser: {{$input}}\nBot: "
 completion:
   temperature: 1
 input:

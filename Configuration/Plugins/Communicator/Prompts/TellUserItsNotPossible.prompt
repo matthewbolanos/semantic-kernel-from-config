@@ -1,12 +1,8 @@
 name: TellUserItsNotPossible
-description: |
-  If a plan is not possible to complete, use this function to tell the user that you cannot complete the goal. Do not add steps after this one.
+description: |-
+  If a plan is not possible to complete, use this function to tell the user that you cannot complete the goal.
 model: gpt3
-prompt: |
-  The bot would like to help, but they are unable to complete the goal for the following reasons: {{$reasons}}
-
-  User: {{$input}}
-  Bot: 
+prompt: "The bot would like to help, but they are unable to complete the goal for the following reasons: {{$reasons}}\n\nUser: {{$input}}\nBot: "
 completion:
   temperature: 1
 input:

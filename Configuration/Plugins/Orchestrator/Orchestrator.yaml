@@ -1,0 +1,6 @@
+name: Orchestrator
+description: |
+  This plugin provides a set of tools to help you understand documents.
+functions:
+  cSharpFunctions:
+   - className: PowerMatt.Sample.Plugin.Orchestrator

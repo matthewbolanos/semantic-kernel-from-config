@@ -29,7 +29,7 @@ public static class ImportPluginFromConfigExtension
             foreach (var semanticFunctionFile in pluginConfig.Functions.SemanticFunctions)
             {
                 var f = kernel.ImportSemanticFunctionFromConfig(
-                    Path.Combine(pluginDirectory, semanticFunctionFile),
+                    Path.Combine(pluginDirectory, semanticFunctionFile.path!),
                     pluginName: pluginConfig.Name,
                     trustService: trustService
                 );

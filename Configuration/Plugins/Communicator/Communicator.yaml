@@ -3,5 +3,7 @@ description: |
   This plugin will casually chat with you about any topic, but it's not as smart as other plugins that are designed for specific tasks.
 functions:
   semanticFunctions:
-   - ./Prompts/AskUserWhatTheyWant.prompt
-   - ./Prompts/CasuallyRespondToUser.prompt
+   - path: ./Prompts/AskUserWhatTheyWant.prompt
+   - path: ./Prompts/CasuallyRespondToUser.prompt
+  cSharpFunctions:
+   - className: PowerMatt.Sample.Plugin.Communicator

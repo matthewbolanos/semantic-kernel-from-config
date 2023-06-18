@@ -1,11 +1,8 @@
 name: SummarizeDocument
-description: |
+description: |-
   After given a document in text form, it will return a summary of it.
 model: gpt3
-prompt: |
-  Summarize the following document: {{$input}}
-
-  Summary: 
+prompt: "Summarize the following document: {{$input}}\n\nSummary:\n"
 completion:
   temperature: 1
 input:

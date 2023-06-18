@@ -16,7 +16,8 @@ public class AgentConfig
     [YamlMember(Alias = "connections")]
     public Dictionary<string, ConnectionConfig>? Connections { get; set; }
 
-    public PlannerConfig? Planner { get; set; }
+    [YamlMember(Alias = "mainFunction")]
+    public string? MainFunction { get; set; }
 
     [YamlMember(Alias = "plugins")]
     public List<string>? Plugins { get; set; }
@@ -49,13 +50,6 @@ public class AgentConfig
 
         [YamlMember(Alias = "orgId")]
         public string? OrgId { get; set; }
-    }
-
-    public class PlannerConfig
-    {
-
-        [YamlMember(Alias = "type")]
-        public PlannerType? Type { get; set; }
     }
 
     public static AgentConfig FromDirectory(string directory, string environment = "dev")
@@ -106,11 +100,4 @@ public enum EndpointType
 {
     TextCompletion = 0,
     ChatCompletion = 1
-}
-
-public enum PlannerType
-{
-    MockPlanner = 0,
-    ActionPlanner = 1,
-    SequentialPlanner = 2
 }

@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using PowerMatt.SKFromConfig.Extensions.Models;
+using static Microsoft.SemanticKernel.SemanticFunctions.PromptTemplateConfig;
 
 namespace PowerMatt.SKFromConfig.Extensions.Kernel;
 
@@ -23,6 +24,21 @@ public static class ImportPromptFromConfigExtension
 
         var promptConfig = PromptConfig.FromFile(promptConfigFile);
 
+        // Create input config
+        Microsoft.SemanticKernel.SemanticFunctions.PromptTemplateConfig.InputConfig inputConfig = new();
+        if (promptConfig.Input?.Parameters != null)
+        {
+            foreach (var input in promptConfig.Input.Parameters)
+            {
+                inputConfig.Parameters.Add(new InputParameter
+                {
+                    Name = input.Name ?? "Unknown",
+                    Description = input.Description ?? "Unknown",
+                    DefaultValue = input.DefaultValue ?? "",
+                });
+            }
+        }
+
         var config = new PromptTemplateConfig
         {
             Description = promptConfig.Description ?? "Generic function, unknown purpose",
@@ -36,7 +52,8 @@ public static class ImportPromptFromConfigExtension
                 FrequencyPenalty = promptConfig.Completion?.FrequencyPenalty ?? 0.0,
                 MaxTokens = promptConfig.Completion?.MaxTokens ?? 100,
                 StopSequences = promptConfig.Completion?.StopSequences ?? new List<string>()
-            }
+            },
+            Input = inputConfig,
         };
 
         var func = kernel.CreateSemanticFunction(

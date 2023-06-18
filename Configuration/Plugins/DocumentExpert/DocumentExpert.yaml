@@ -3,6 +3,6 @@ description: |
   This plugin provides a set of tools to help you understand documents.
 functions:
   semanticFunctions:
-   - ./Prompts/SummarizeDocument.prompt
+   - path: ./Prompts/SummarizeDocument.prompt
   cSharpFunctions:
    - className: PowerMatt.Sample.Plugin.DocumentExpert

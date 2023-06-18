@@ -1,31 +1,97 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using static PowerMatt.SKFromConfig.Extensions.Agent.GoalThread;
 
 namespace PowerMatt.SKFromConfig.Extensions.Agent;
 
+
 public class GoalOrchestrator
 {
-    public async IAsyncEnumerable<OrchestratorMessage> ReceiveMessage(SKContext context)
+    private ILogger<ConsoleAgent>? logger;
+
+    public GoalOrchestrator(ILogger<ConsoleAgent>? logger = null)
     {
-        yield return new OrchestratorMessage(OrchestratorMessageType.USEFUL_MESSAGE);
+        this.logger = logger;
+    }
 
+    public async IAsyncEnumerable<OrchestratorMessage> ReceiveMessage(IKernel kernel, SKContext context)
+    {
+        SKContext c = new SKContext();
+        c["input"] = context["input"];
+        c["history"] = context["history"];
+        c["goal"] = context["goal"];
 
-        try { context["index"] = context["index"]; }
-        catch { context["index"] = "0"; }
+        // Check if there is a goal
+        if (String.IsNullOrEmpty(c["goal"]) || c["goal"] == "GOAL IS NOT KNOWN")
+        {
+            yield return new OrchestratorMessage(OrchestratorMessageType.USEFUL_MESSAGE);
 
-        context["index"] = (int.Parse(context["index"]) + 1).ToString();
+            c["input"] = context["input"];
+            c["history"] = context["history"];
+            var goal = (
+                await kernel.Skills.GetFunction("LifeCoach", "GetUsersGoal")
+                .InvokeAsync(c)
+            ).ToString().Trim();
 
-        await Task.Delay(100);
+            logger?.LogInformation($"Goal: '{goal}'");
+
+            yield return new OrchestratorMessage(OrchestratorMessageType.UPDATE_GOAL, goal);
+        }
+        else
+        {
+            // Check if message helps with goal
+            c["input"] = context["input"];
+            var DoesMessageHelpWithGoal = (
+                await kernel.Skills.GetFunction("LifeCoach", "CheckIfMessageHelpsWithGoal")
+                .InvokeAsync(c)
+            ).ToString().Trim();
+
+            logger?.LogInformation($"DoesMessageHelpWithGoal: '{DoesMessageHelpWithGoal}'");
+
+            if (bool.Parse(DoesMessageHelpWithGoal))
+            {
+                yield return new OrchestratorMessage(OrchestratorMessageType.USEFUL_MESSAGE);
+            }
+            else
+            {
+                yield return new OrchestratorMessage(OrchestratorMessageType.NOT_USEFUL_MESSAGE);
+                yield break;
+            }
+        }
+
+        // Chat with user
+        var response = (
+            await kernel.Skills.GetFunction("Communicator", "ChatWithUser")
+            .InvokeAsync(c)
+        ).ToString().Trim();
 
         yield return new OrchestratorMessage(
             OrchestratorMessageType.REPLY_TO_USER,
-            "The main function has been called in the same thread " + context["index"] + " times.");
+            response);
 
-        if (context["index"] == "3")
+        // Check if goal was achieved
+        var WasGoalAchieved = (
+            await kernel.Skills.GetFunction("LifeCoach", "CheckIfGoalWasAchieved")
+            .InvokeAsync(c)
+        ).ToString().Trim();
+
+        logger?.LogInformation($"WasGoalAchieved: '{WasGoalAchieved}'");
+
+        if (bool.Parse(WasGoalAchieved))
         {
             yield return new OrchestratorMessage(OrchestratorMessageType.GOAL_ACHIEVED);
         }
-        if (context["input"] == "cancel")
+
+        // Check if goal was not able to be completed
+        var DoesUserWantToCancelGoal = (
+            await kernel.Skills.GetFunction("LifeCoach", "CheckIfUserWantsToGiveUp")
+            .InvokeAsync(c)
+        ).ToString().Trim();
+
+        logger?.LogInformation($"DoesUserWantToCancelGoal: '{DoesUserWantToCancelGoal}'");
+
+        if (bool.Parse(DoesUserWantToCancelGoal))
         {
             yield return new OrchestratorMessage(OrchestratorMessageType.GOAL_CANCELED);
         }

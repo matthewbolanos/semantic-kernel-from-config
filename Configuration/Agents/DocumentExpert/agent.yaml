@@ -13,4 +13,5 @@ connections:
 plugins:
   - ../../Plugins/DocumentExpert/DocumentExpert.yaml
   - ../../Plugins/Communicator/Communicator.yaml
+  - ../../Plugins/LifeCoach/LifeCoach.yaml
 logLevel: 6

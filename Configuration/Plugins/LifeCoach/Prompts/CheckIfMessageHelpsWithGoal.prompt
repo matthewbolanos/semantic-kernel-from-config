@@ -1,0 +1,25 @@
+name: CheckIfMessageHelpsWithGoal
+description: |-
+  Returns TRUE or FALSE depending on whether the message is relevant to the goal of the user.
+model: gpt3
+prompt: |-
+  [INSTRUCTIONS]
+  If the last message is relevant to the conversation about the goal, return TRUE. Otherwise, return FALSE.
+  If a user is switching topics in the last topic, this means the user is not interested in the goal anymore. This is relevant to the conversation, so return TRUE.
+
+  [GOAL]
+  {{$goal}}
+
+  [CONVERSATION]
+  {{$history}}
+
+  [ANSWER]
+
+completion:
+  temperature: 1
+input:
+  parameters:
+    - name: history
+      description: The conversation history.
+    - name: goal
+      description: The goal of the user.

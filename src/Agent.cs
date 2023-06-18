@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using PowerMatt.SKFromConfig.Extensions.Kernel;
 using PowerMatt.SKFromConfig.Extensions.Models;
@@ -6,6 +5,8 @@ using PowerMatt.Gui.Views;
 using Terminal.Gui;
 using System.Collections.Concurrent;
 using static PowerMatt.SKFromConfig.Extensions.Agent.GoalThread;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace PowerMatt.SKFromConfig.Extensions.Agent;
 
@@ -15,7 +16,10 @@ public class ConsoleAgent
     private GoalOrchestrator orchestrator;
     private ChatView? chatView;
     private ConcurrentDictionary<string, GoalThread> goalThreads = new ConcurrentDictionary<string, GoalThread> { };
-    private ILogger<ConsoleAgent>? logger;
+    // private ILogger<ConsoleAgent>? logger;
+
+    private ObservableCollection<string> history = new ObservableCollection<string>();
+
 
 
     public ConsoleAgent(string agentDirectory, GoalOrchestrator orchestrator)
@@ -113,17 +117,17 @@ public class ConsoleAgent
         }
 
         // Add logger
-        if (agentConfig.LogLevel != null)
-        {
-            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder
-                    .SetMinimumLevel(agentConfig.LogLevel ?? LogLevel.Warning)
-                    .AddDebug();
-            });
-            logger = loggerFactory.CreateLogger<ConsoleAgent>();
-            kernelBuilder.WithLogger(loggerFactory.CreateLogger<ConsoleAgent>());
-        }
+        // if (agentConfig.LogLevel != null)
+        // {
+        //     using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+        //     {
+        //         builder
+        //             .SetMinimumLevel(agentConfig.LogLevel ?? LogLevel.Warning)
+        //             .AddDebug();
+        //     });
+        //     logger = loggerFactory.CreateLogger<ConsoleAgent>();
+        //     kernelBuilder.WithLogger(loggerFactory.CreateLogger<ConsoleAgent>());
+        // }
 
         // Build kernel
         kernel = kernelBuilder.Build();
@@ -141,12 +145,17 @@ public class ConsoleAgent
 
         // Set main function
         this.orchestrator = orchestrator;
+
+        // Listen to conversation history
+        history.CollectionChanged += UpdateHistoryContext;
+
     }
 
     public void Start()
     {
         Action<string> onInput = async (string input) =>
         {
+            history.Add("User: " + input);
             await SendMessageToAllGoalThreadsAsync(input);
         };
 
@@ -158,7 +167,41 @@ public class ConsoleAgent
         Application.Shutdown();
     }
 
-    public async Task SendMessageToAllGoalThreadsAsync(string message)
+    private void RespondToUser(string message)
+    {
+        history.Add("Bot: " + message);
+        chatView!.Respond(message.Trim());
+    }
+
+    private void UpdateHistoryContext(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Add)
+        {
+            string history = GetConversationHistory();
+
+            // loop through all goal threads and update their context
+            foreach (var ct in goalThreads)
+            {
+                ct.Value.Context["history"] = history;
+            }
+        }
+    }
+
+    private string GetConversationHistory()
+    {
+        string conversationHistory = "";
+        foreach (var message in history)
+        {
+            conversationHistory += message + "\n";
+        }
+
+        // remove last newline
+        conversationHistory = conversationHistory.Substring(0, conversationHistory.Length - 1);
+
+        return conversationHistory;
+    }
+
+    private async Task SendMessageToAllGoalThreadsAsync(string message)
     {
         // Check if any goal threads want the message
         bool messageReceived = false;
@@ -183,12 +226,12 @@ public class ConsoleAgent
             var context = kernel.CreateNewContext();
             context["GoalAchieved"] = "FALSE";
             context["GoalCancelled"] = "FALSE";
+            context["History"] = GetConversationHistory();
 
             var goalThread = new GoalThread(
                 kernel,
                 context,
-                orchestrator,
-                chatView!.Respond);
+                orchestrator);
 
             // Create random ID
             string id = Guid.NewGuid().ToString();
@@ -219,7 +262,7 @@ public class ConsoleAgent
                     case OrchestratorMessageType.NOT_USEFUL_MESSAGE:
                         break;
                     case OrchestratorMessageType.REPLY_TO_USER:
-                        chatView!.Respond(orchestratorMessage.Message!);
+                        RespondToUser(orchestratorMessage.Message!);
                         break;
                     case OrchestratorMessageType.GOAL_ACHIEVED:
                     case OrchestratorMessageType.GOAL_CANCELED:

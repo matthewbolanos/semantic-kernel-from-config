@@ -6,20 +6,20 @@ namespace PowerMatt.SKFromConfig.Extensions.Agent;
 
 public class GoalThread
 {
-    private Action<string> _respondToUser;
     private IKernel _kernel;
-    private SKContext _context;
+
+    public SKContext Context { get; set; }
     private GoalOrchestrator _orchestrator;
+
+    private string _goal = "";
 
     public GoalThread(
         IKernel kernel,
         SKContext initialContext,
-        GoalOrchestrator orchestrator,
-        Action<string> respondToUser)
+        GoalOrchestrator orchestrator)
     {
         _kernel = kernel;
-        _respondToUser = respondToUser;
-        _context = initialContext;
+        Context = initialContext;
         _orchestrator = orchestrator;
     }
 
@@ -31,11 +31,18 @@ public class GoalThread
     public async IAsyncEnumerable<OrchestratorMessage> ReceiveMessage(string message)
     {
         // prepare the context
-        _context["input"] = message;
+        Context["input"] = message;
+        Context["goal"] = _goal;
 
         // run the orchestrator on the user's message
-        await foreach (var orchestratorMessage in _orchestrator.ReceiveMessage(_context))
+        await foreach (var orchestratorMessage in _orchestrator.ReceiveMessage(_kernel, Context))
         {
+            switch (orchestratorMessage.Type)
+            {
+                case OrchestratorMessageType.UPDATE_GOAL:
+                    _goal = orchestratorMessage.Message!;
+                    break;
+            }
             yield return orchestratorMessage;
         }
     }
@@ -45,7 +52,7 @@ public class GoalThread
         USEFUL_MESSAGE,
         NOT_USEFUL_MESSAGE,
         REPLY_TO_USER,
-        CREATE_NEW_GOAL,
+        UPDATE_GOAL,
         GOAL_ACHIEVED,
         GOAL_CANCELED,
         GOAL_NOT_ABLE_TO_COMPLETED,

@@ -1,0 +1,12 @@
+name: LifeCoach
+description: |
+  This plugin will help users achieve their goals.
+functions:
+  semanticFunctions:
+    - path: ./Prompts/CheckIfGoalWasAchieved.prompt
+    - path: ./Prompts/CheckIfMessageHelpsWithGoal.prompt
+    - path: ./Prompts/CheckIfUserWantsToGiveUp.prompt
+    - path: ./Prompts/GetUsersGoal.prompt
+      
+#   - path: ./Prompts/AskUserWhatTheyWant.prompt
+#   - path: ./Prompts/TellUserTheirGoalIsNotPossible.prompt

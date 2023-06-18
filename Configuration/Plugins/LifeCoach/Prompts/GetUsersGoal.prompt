@@ -1,0 +1,19 @@
+name: GetUsersGoal
+description: |-
+  Retrieves the user's goal from an input.
+model: gpt3
+prompt: |-
+  [INSTRUCTIONS]
+  Describe the goal of the user. If you don't know the goal, return "GOAL IS NOT KNOWN"
+
+  [CONVERSATION]
+  {{$history}}
+
+  [GOAL]
+
+completion:
+  temperature: 1
+input:
+  parameters:
+    - name: history
+      description: The conversation history.

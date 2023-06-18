@@ -1,0 +1,24 @@
+name: CheckIfUserWantsToGiveUp
+description: |-
+  Returns TRUE or FALSE if the user no longer wants to continue achieving the goal.
+model: gpt3
+prompt: |-
+  [INSTRUCTIONS]
+  Return TRUE or FALSE depending on whether the user wants to give up on the goal. If you don't know, return FALSE.
+
+  [GOAL]
+  {{$goal}}
+
+  [CONVERSATION]
+  {{$history}}
+
+  [ANSWER]
+
+completion:
+  temperature: 1
+input:
+  parameters:
+    - name: history
+      description: The conversation history.
+    - name: goal
+      description: The goal of the user.

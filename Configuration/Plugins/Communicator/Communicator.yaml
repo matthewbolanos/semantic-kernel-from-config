@@ -3,7 +3,6 @@ description: |
   This plugin will casually chat with you about any topic, but it's not as smart as other plugins that are designed for specific tasks.
 functions:
   semanticFunctions:
-   - path: ./Prompts/AskUserWhatTheyWant.prompt
-   - path: ./Prompts/CasuallyRespondToUser.prompt
+   - path: ./Prompts/ChatWithUser.prompt
   cSharpFunctions:
    - className: PowerMatt.Sample.Plugin.Communicator

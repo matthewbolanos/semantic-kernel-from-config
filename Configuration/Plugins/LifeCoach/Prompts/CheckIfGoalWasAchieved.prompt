@@ -1,0 +1,24 @@
+name: CheckIfGoalWasAchieved
+description: |-
+  Returns TRUE or FALSE whether the goal of the user was achieved
+model: gpt3
+prompt: |-
+  [INSTRUCTIONS]
+  Return TRUE or FALSE depending on whether the goals of the user were met during the conversation. If you don't know, return FALSE.
+
+  [GOAL]
+  {{$goal}}
+
+  [CONVERSATION]
+  {{$history}}
+
+  [ANSWER]
+
+completion:
+  temperature: 1
+input:
+  parameters:
+    - name: history
+      description: The conversation history.
+    - name: goal
+      description: The goal of the user.

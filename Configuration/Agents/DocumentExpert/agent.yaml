@@ -14,4 +14,4 @@ planner:
   type: 1
 plugins:
   - ../../Plugins/DocumentExpert/DocumentExpert.yaml
-logLevel: 4
+logLevel: 6

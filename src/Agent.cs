@@ -3,6 +3,8 @@ using Microsoft.SemanticKernel;
 using PowerMatt.SKFromConfig.Extensions.Kernel;
 using PowerMatt.SKFromConfig.Extensions.Models;
 using PowerMatt.SKFromConfig.Extensions.Planner;
+using PowerMatt.Gui.Views;
+using Terminal.Gui;
 
 namespace PowerMatt.SKFromConfig.Extensions.Agent;
 
@@ -11,6 +13,7 @@ public class ConsoleAgent
     private IKernel kernel;
     private IPlanner planner;
     private Microsoft.SemanticKernel.Planning.Plan? currentPlan;
+    private ChatView? chatView;
 
     public ConsoleAgent(string agentDirectory)
     {
@@ -19,7 +22,6 @@ public class ConsoleAgent
 
         // Get agent config
         var agentConfig = AgentConfig.FromDirectory(agentDirectory);
-
 
         // Check if there are any models
         if (agentConfig.Models == null || agentConfig.Models.Count == 0)
@@ -32,7 +34,6 @@ public class ConsoleAgent
         {
             throw new ArgumentException("No connections found in agent config.");
         }
-
 
         // Add models to kernel
         foreach (var model in agentConfig.Models)
@@ -115,7 +116,6 @@ public class ConsoleAgent
             {
                 builder
                     .SetMinimumLevel(agentConfig.LogLevel ?? LogLevel.Warning)
-                    .AddConsole()
                     .AddDebug();
             });
             kernelBuilder.WithLogger(loggerFactory.CreateLogger<IKernel>());
@@ -157,10 +157,26 @@ public class ConsoleAgent
         }
     }
 
+    public void Start()
+    {
+        Action<string> onInput = async (string input) =>
+        {
+            await SendMessageAsync(input);
+        };
+
+        Application.Init();
+
+        chatView = new ChatView(onInput);
+
+        Application.Run(chatView);
+        Application.Shutdown();
+    }
+
     public async Task SendMessageAsync(string message)
     {
         currentPlan = await planner.CreatePlanAsync(message);
+        var result = await currentPlan.InvokeAsync();
 
-        Console.WriteLine(currentPlan.ToJson());
+        chatView!.Respond(result.ToString());
     }
 }

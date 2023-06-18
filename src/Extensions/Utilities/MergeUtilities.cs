@@ -7,6 +7,7 @@ namespace PowerMatt.SKFromConfig.Extensions;
 #pragma warning disable CS8601  
 #pragma warning disable CS8602 
 #pragma warning disable CS8614 
+#pragma warning disable CS8714 
 
 public class MergeUtilities
 {

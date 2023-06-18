@@ -1,0 +1,96 @@
+using Terminal.Gui;
+
+namespace PowerMatt.Gui.Views;
+
+public class Message
+{
+    private View _renderedView;
+    private View _parentView;
+    private String _text = "";
+    private String _sender = "";
+    private DateTime _sentAt = DateTime.Now;
+
+    public int Height
+    {
+        get
+        {
+            var height = 3;
+            // Split the text by new lines
+            string[] lines = _text.Split('\n');
+
+            foreach (var line in lines)
+            {
+                height++;
+
+                // Split the text by spaces
+                string[] words = line.Split(' ');
+
+                var currentLineLength = 0;
+
+                foreach (var word in words)
+                {
+                    if (currentLineLength + word.Length > Width)
+                    {
+                        height++;
+                        currentLineLength = 0;
+                    }
+                    currentLineLength += word.Length + 1;
+                }
+            }
+
+            return height;
+        }
+    }
+
+    public int Width
+    {
+        get
+        {
+            if (_text.Length + 1 < _sender.Length)
+            {
+                return _sender.Length + 1 + 2;
+            }
+            if (_text.Length < 50)
+            {
+                return _text.Length + 2;
+            }
+
+            return 50;
+        }
+    }
+
+    public Message(View parentView, string text, string sender, DateTime sentAt, Pos position)
+    {
+        _text = text;
+        _sender = sender;
+        _sentAt = sentAt;
+        _parentView = parentView;
+
+        _renderedView = new View()
+        {
+            X = sender == "You" ? Pos.Right(_parentView) - Width - 2 : 2,
+            Y = position + 1,
+            Width = Width - 2,
+            Height = Height - 2,
+            CanFocus = false,
+            Text = $"{_sender}:\n{_text}",
+            ColorScheme = new ColorScheme
+            {
+                Normal = new Terminal.Gui.Attribute(sender == "You" ? Color.BrightCyan : Color.White, Color.Black)
+            },
+            Border = new Border()
+            {
+                BorderStyle = BorderStyle.Rounded,
+                BorderBrush = sender == "You" ? Color.BrightCyan : Color.White
+            }
+
+        };
+
+        _parentView.Add(_renderedView);
+    }
+
+    public void Scroll(int offset)
+    {
+        _renderedView.Y += offset;
+    }
+}

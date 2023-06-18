@@ -184,7 +184,13 @@ public class ConsoleAgent
             // create new context thread
             var context = kernel.CreateNewContext();
             context["input"] = message;
-            var contextThread = new ContextThread(context, chatView!.Respond);
+            context["goalAchieved"] = "FALSE";
+
+            var contextThread = new ContextThread(
+                kernel,
+                context,
+                mainFunction,
+                chatView!.Respond);
 
             // Create random ID
             string id = Guid.NewGuid().ToString();

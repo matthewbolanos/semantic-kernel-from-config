@@ -29,7 +29,7 @@ public class Message
 
                 foreach (var word in words)
                 {
-                    if (currentLineLength + word.Length > Width)
+                    if (currentLineLength + word.Length > Width - 2)
                     {
                         height++;
                         currentLineLength = 0;
@@ -48,7 +48,7 @@ public class Message
         {
             int parentWidth = _parentView.Frame.Width;
 
-            if (_text.Length + 1 < _sender.Length)
+            if (_text.Length < _sender.Length + 1)
             {
                 return _sender.Length + 1 + 2;
             }

@@ -1,3 +1,4 @@
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace PowerMatt.Sample.Plugin;
@@ -5,9 +6,20 @@ namespace PowerMatt.Sample.Plugin;
 public class Orchestrator
 {
     [SKFunction("Main function; DO NOT USE FOR PLANS")]
-    public string Main(string input)
+    public string Main(SKContext context)
     {
-        return @"Semantic Kernel is an open-source SDK";
+        // Check if index exists
+        try { context["index"] = context["index"]; }
+        catch { context["index"] = "0"; }
+
+        context["index"] = (int.Parse(context["index"]) + 1).ToString();
+
+        if (context["index"] == "3")
+        {
+            context["GoalAchieved"] = "TRUE";
+        }
+
+        return @"The main function has been called in the same thread " + context["index"] + " times.";
     }
 
     [SKFunction("Will wait for the response from the user and return it as a string. ")]

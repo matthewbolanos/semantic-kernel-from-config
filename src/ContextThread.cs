@@ -28,19 +28,24 @@ public class ContextThread
     public async Task StartAsync()
     {
         // Loop until the goal is achieved
-        while (!bool.Parse(_context["GoalAchieved"]))
+        do
         {
+            // wait for user input
+            _userInputCompletionSource = new TaskCompletionSource<string>();
+            _context["input"] = await _userInputCompletionSource.Task;
+
+            // cancel if the user inputs "cancel"
+            if (_context["input"] == "cancel")
+            {
+                _context["goalCancelled"] = "TRUE";
+            }
+
             // run main function
             var result = await _mainFunction.InvokeAsync(_context);
             _respondToUser(result.ToString());
-
-            if (!bool.Parse(_context["GoalAchieved"]))
-            {
-                // wait for user input
-                _userInputCompletionSource = new TaskCompletionSource<string>();
-                _context["input"] = await _userInputCompletionSource.Task;
-            }
-        }
+        } while (
+            !bool.Parse(_context["goalAchieved"]) &&
+            !bool.Parse(_context["goalCancelled"]));
     }
 
     public bool IsWaitingForUserInput()

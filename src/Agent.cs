@@ -183,8 +183,8 @@ public class ConsoleAgent
         {
             // create new context thread
             var context = kernel.CreateNewContext();
-            context["input"] = message;
             context["goalAchieved"] = "FALSE";
+            context["goalCancelled"] = "FALSE";
 
             var contextThread = new ContextThread(
                 kernel,
@@ -198,7 +198,10 @@ public class ConsoleAgent
             // add context to concurrent dictionary
             contextThreads.TryAdd(id, contextThread);
 
-            await contextThread.StartAsync();
+            Task thread = contextThread.StartAsync();
+            contextThread.ReceiveMessage(message);
+
+            await thread;
 
             // remove context from concurrent dictionary
             contextThreads.TryRemove(id, out _);

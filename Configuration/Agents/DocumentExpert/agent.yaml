@@ -10,9 +10,7 @@ models:
 connections:
   openAI:
     serviceType: OpenAI
-mainFunction: Orchestrator.Main
 plugins:
   - ../../Plugins/DocumentExpert/DocumentExpert.yaml
   - ../../Plugins/Communicator/Communicator.yaml
-  - ../../Plugins/Orchestrator/Orchestrator.yaml
 logLevel: 6

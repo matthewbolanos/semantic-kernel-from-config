@@ -16,9 +16,6 @@ public class AgentConfig
     [YamlMember(Alias = "connections")]
     public Dictionary<string, ConnectionConfig>? Connections { get; set; }
 
-    [YamlMember(Alias = "mainFunction")]
-    public string? MainFunction { get; set; }
-
     [YamlMember(Alias = "plugins")]
     public List<string>? Plugins { get; set; }
 

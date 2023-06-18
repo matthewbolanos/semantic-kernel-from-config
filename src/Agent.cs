@@ -4,21 +4,21 @@ using PowerMatt.SKFromConfig.Extensions.Kernel;
 using PowerMatt.SKFromConfig.Extensions.Models;
 using PowerMatt.Gui.Views;
 using Terminal.Gui;
-using Microsoft.SemanticKernel.SkillDefinition;
 using System.Collections.Concurrent;
+using static PowerMatt.SKFromConfig.Extensions.Agent.GoalThread;
 
 namespace PowerMatt.SKFromConfig.Extensions.Agent;
 
 public class ConsoleAgent
 {
     private IKernel kernel;
-    private ISKFunction mainFunction;
+    private GoalOrchestrator orchestrator;
     private ChatView? chatView;
-    private ConcurrentDictionary<string, ContextThread> contextThreads = new ConcurrentDictionary<string, ContextThread> { };
+    private ConcurrentDictionary<string, GoalThread> goalThreads = new ConcurrentDictionary<string, GoalThread> { };
     private ILogger<ConsoleAgent>? logger;
 
 
-    public ConsoleAgent(string agentDirectory)
+    public ConsoleAgent(string agentDirectory, GoalOrchestrator orchestrator)
     {
         // Create kernel builder
         var kernelBuilder = new KernelBuilder();
@@ -139,22 +139,15 @@ public class ConsoleAgent
             }
         }
 
-        // Check if there is a planner type
-        if (agentConfig.MainFunction == null)
-        {
-            throw new ArgumentException("No main function found in agent config.");
-        }
-
         // Set main function
-        string[] mainFunctionParts = agentConfig.MainFunction.Split('.');
-        mainFunction = kernel.Skills.GetFunction(mainFunctionParts[0], mainFunctionParts[1])!;
+        this.orchestrator = orchestrator;
     }
 
     public void Start()
     {
         Action<string> onInput = async (string input) =>
         {
-            await SendMessageAsync(input);
+            await SendMessageToAllGoalThreadsAsync(input);
         };
 
         Application.Init();
@@ -165,46 +158,79 @@ public class ConsoleAgent
         Application.Shutdown();
     }
 
-    public async Task SendMessageAsync(string message)
+    public async Task SendMessageToAllGoalThreadsAsync(string message)
     {
-        // Check if any context threads should receive the message
+        // Check if any goal threads want the message
         bool messageReceived = false;
-        foreach (var ct in contextThreads)
+        var tasks = new List<Task>();
+        foreach (var ct in goalThreads)
         {
-            if (ct.Value.IsWaitingForUserInput())
+            tasks.Add(Task.Run(async () =>
             {
-                ct.Value.ReceiveMessage(message);
-                messageReceived = true;
+                if (await SendMessageToGoalThread(ct.Key, message))
+                {
+                    messageReceived = true;
+                }
             }
+            ));
         }
+        await Task.WhenAll(tasks);
 
-        // If not, send to main function
+        // If not, create a new goal thread
         if (!messageReceived)
         {
             // create new context thread
             var context = kernel.CreateNewContext();
-            context["goalAchieved"] = "FALSE";
-            context["goalCancelled"] = "FALSE";
+            context["GoalAchieved"] = "FALSE";
+            context["GoalCancelled"] = "FALSE";
 
-            var contextThread = new ContextThread(
+            var goalThread = new GoalThread(
                 kernel,
                 context,
-                mainFunction,
+                orchestrator,
                 chatView!.Respond);
 
             // Create random ID
             string id = Guid.NewGuid().ToString();
 
             // add context to concurrent dictionary
-            contextThreads.TryAdd(id, contextThread);
+            goalThreads.TryAdd(id, goalThread);
+            goalThread.StartAsync();
 
-            Task thread = contextThread.StartAsync();
-            contextThread.ReceiveMessage(message);
-
-            await thread;
-
-            // remove context from concurrent dictionary
-            contextThreads.TryRemove(id, out _);
+            await SendMessageToGoalThread(id, message);
         }
+    }
+
+    public async Task<bool> SendMessageToGoalThread(string id, string message)
+    {
+        bool messageReceived = false;
+
+        // Check if goal thread exists
+        if (goalThreads.TryGetValue(id, out var goalThread))
+        {
+            // Send message to goal thread
+            await foreach (var orchestratorMessage in goalThread.ReceiveMessage(message))
+            {
+                switch (orchestratorMessage.Type)
+                {
+                    case OrchestratorMessageType.USEFUL_MESSAGE:
+                        messageReceived = true;
+                        break;
+                    case OrchestratorMessageType.NOT_USEFUL_MESSAGE:
+                        break;
+                    case OrchestratorMessageType.REPLY_TO_USER:
+                        chatView!.Respond(orchestratorMessage.Message!);
+                        break;
+                    case OrchestratorMessageType.GOAL_ACHIEVED:
+                    case OrchestratorMessageType.GOAL_CANCELED:
+                    case OrchestratorMessageType.GOAL_NOT_ABLE_TO_COMPLETED:
+                    case OrchestratorMessageType.ERROR:
+                        goalThreads.TryRemove(id, out _);
+                        break;
+                }
+            }
+        }
+
+        return messageReceived;
     }
 }

@@ -6,4 +6,4 @@ obj
 *.log
 *.tmp
 .vscode/tasks.json
-src/Agents/DocumentExpert/DocumentExpert.agent.dev.yaml
+**/agent.dev.yaml

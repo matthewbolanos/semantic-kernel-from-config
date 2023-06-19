@@ -4,7 +4,7 @@ description: |-
 model: gpt3
 prompt: |-
   [INSTRUCTIONS]
-  Describe the goal of the user. If you don't know the goal, return "GOAL IS NOT KNOWN"
+  Describe the goal of the user. If you don't know the goal, return "NOT KNOWN"
 
   [CONVERSATION]
   {{$history}}

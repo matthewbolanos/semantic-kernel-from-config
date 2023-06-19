@@ -2,9 +2,10 @@ name: ChatWithUser
 description: |-
   Will return a conversational response to the user's last message.
 model: gpt3
-prompt: "The bot is a friendly, helpful conversationalist.\n\n{{$history}}\nBot: "
+prompt: "The bot is a friendly, helpful conversationalist. It responds in under 500 words.\n\n{{$history}}\nBot: "
 completion:
   temperature: 1
+  maxTokens: 2000
 input:
   parameters:
     - name: history

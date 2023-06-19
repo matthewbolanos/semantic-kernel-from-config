@@ -4,7 +4,8 @@ description: |-
 model: gpt3
 prompt: |-
   [INSTRUCTIONS]
-  Return TRUE or FALSE depending on whether the user wants to give up on the goal. If you don't know, return FALSE.
+  Return TRUE if the last message from the user shows that they want to give up on the goal or switch topics.
+  Return FALSE if you think the user still wants to continue talking about this goal or if you are unsure.
 
   [GOAL]
   {{$goal}}

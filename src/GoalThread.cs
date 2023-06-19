@@ -65,5 +65,4 @@ public class GoalThread
         NOT_ABLE_TO_COMPLETE,
         ERROR
     }
-
 }

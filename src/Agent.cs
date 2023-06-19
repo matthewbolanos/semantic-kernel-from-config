@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using static PowerMatt.SKFromConfig.Extensions.Agent.GoalThread;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using Microsoft.Extensions.Logging;
 
 namespace PowerMatt.SKFromConfig.Extensions.Agent;
 
@@ -16,7 +17,7 @@ public class ConsoleAgent
     private GoalOrchestrator orchestrator;
     private ChatView? chatView;
     private ConcurrentDictionary<string, GoalThread> goalThreads = new ConcurrentDictionary<string, GoalThread> { };
-    // private ILogger<ConsoleAgent>? logger;
+    private ILogger<ConsoleAgent>? logger;
 
     private ObservableCollection<string> history = new ObservableCollection<string>();
 
@@ -117,17 +118,17 @@ public class ConsoleAgent
         }
 
         // Add logger
-        // if (agentConfig.LogLevel != null)
-        // {
-        //     using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-        //     {
-        //         builder
-        //             .SetMinimumLevel(agentConfig.LogLevel ?? LogLevel.Warning)
-        //             .AddDebug();
-        //     });
-        //     logger = loggerFactory.CreateLogger<ConsoleAgent>();
-        //     kernelBuilder.WithLogger(loggerFactory.CreateLogger<ConsoleAgent>());
-        // }
+        if (agentConfig.LogLevel != null)
+        {
+            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder
+                    .SetMinimumLevel(agentConfig.LogLevel ?? LogLevel.Warning)
+                    .AddDebug();
+            });
+            logger = loggerFactory.CreateLogger<ConsoleAgent>();
+            kernelBuilder.WithLogger(loggerFactory.CreateLogger<ConsoleAgent>());
+        }
 
         // Build kernel
         kernel = kernelBuilder.Build();

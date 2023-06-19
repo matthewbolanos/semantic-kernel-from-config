@@ -18,83 +18,47 @@ public class GoalOrchestrator
     public async IAsyncEnumerable<OrchestratorMessage> ReceiveMessage(IKernel kernel, SKContext context)
     {
         SKContext c = new SKContext();
-        c["input"] = context["input"];
         c["history"] = context["history"];
-        c["goal"] = context["goal"];
 
-        // Check if there is a goal
-        if (String.IsNullOrEmpty(c["goal"]) || c["goal"] == "GOAL IS NOT KNOWN")
-        {
-            yield return new OrchestratorMessage(OrchestratorMessageType.USEFUL_MESSAGE);
+        // Message is always useful for now
+        yield return new OrchestratorMessage(OrchestratorMessageType.USEFUL_MESSAGE);
 
-            c["input"] = context["input"];
-            c["history"] = context["history"];
-            var goal = (
-                await kernel.Skills.GetFunction("LifeCoach", "GetUsersGoal")
-                .InvokeAsync(c)
-            ).ToString().Trim();
+        // Get the goal
+        var goal = (
+            await kernel.Skills.GetFunction("LifeCoach", "GetUsersGoal")
+            .InvokeAsync(c)
+        ).ToString().Trim();
+        c["goal"] = goal;
+        logger?.LogInformation(c["goal"] + $": Created()");
+        yield return new OrchestratorMessage(OrchestratorMessageType.UPDATE_GOAL, goal);
 
-            logger?.LogInformation($"Goal: '{goal}'");
+        // If there is a goal, create a plan to achieve the goal
+        // if (!String.IsNullOrEmpty(goal) && !goal.Contains("NOT KNOWN"))
+        // {
+        //     SequentialPlanner planner = new SequentialPlanner(kernel);
+        //     var plan = await planner.CreatePlanAsync(goal);
+        //     logger?.LogInformation(c["goal"] + $": Plan({plan.ToJson(true)})");
 
-            yield return new OrchestratorMessage(OrchestratorMessageType.UPDATE_GOAL, goal);
-        }
-        else
-        {
-            // Check if message helps with goal
-            c["input"] = context["input"];
-            var DoesMessageHelpWithGoal = (
-                await kernel.Skills.GetFunction("LifeCoach", "CheckIfMessageHelpsWithGoal")
-                .InvokeAsync(c)
-            ).ToString().Trim();
-
-            logger?.LogInformation($"DoesMessageHelpWithGoal: '{DoesMessageHelpWithGoal}'");
-
-            if (bool.Parse(DoesMessageHelpWithGoal))
-            {
-                yield return new OrchestratorMessage(OrchestratorMessageType.USEFUL_MESSAGE);
-            }
-            else
-            {
-                yield return new OrchestratorMessage(OrchestratorMessageType.NOT_USEFUL_MESSAGE);
-                yield break;
-            }
-        }
+        //     var response = (await plan.InvokeAsync(c)).ToString().Trim();
+        //     logger?.LogInformation(c["goal"] + $": Response({response})");
+        //     yield return new OrchestratorMessage(
+        //         OrchestratorMessageType.REPLY_TO_USER,
+        //         response);
+        // }
+        // else
+        // {
 
         // Chat with user
         var response = (
             await kernel.Skills.GetFunction("Communicator", "ChatWithUser")
             .InvokeAsync(c)
         ).ToString().Trim();
-
+        logger?.LogInformation(c["goal"] + $": Response({response})");
         yield return new OrchestratorMessage(
             OrchestratorMessageType.REPLY_TO_USER,
             response);
 
-        // Check if goal was achieved
-        var WasGoalAchieved = (
-            await kernel.Skills.GetFunction("LifeCoach", "CheckIfGoalWasAchieved")
-            .InvokeAsync(c)
-        ).ToString().Trim();
-
-        logger?.LogInformation($"WasGoalAchieved: '{WasGoalAchieved}'");
-
-        if (bool.Parse(WasGoalAchieved))
-        {
-            yield return new OrchestratorMessage(OrchestratorMessageType.GOAL_ACHIEVED);
-        }
-
-        // Check if goal was not able to be completed
-        var DoesUserWantToCancelGoal = (
-            await kernel.Skills.GetFunction("LifeCoach", "CheckIfUserWantsToGiveUp")
-            .InvokeAsync(c)
-        ).ToString().Trim();
-
-        logger?.LogInformation($"DoesUserWantToCancelGoal: '{DoesUserWantToCancelGoal}'");
-
-        if (bool.Parse(DoesUserWantToCancelGoal))
-        {
-            yield return new OrchestratorMessage(OrchestratorMessageType.GOAL_CANCELED);
-        }
+        // }
     }
 
     public class OrchestratorMessage

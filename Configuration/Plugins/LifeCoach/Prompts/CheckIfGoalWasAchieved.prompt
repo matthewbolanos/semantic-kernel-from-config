@@ -4,7 +4,7 @@ description: |-
 model: gpt3
 prompt: |-
   [INSTRUCTIONS]
-  Return TRUE or FALSE depending on whether the goals of the user were met during the conversation. If you don't know, return FALSE.
+  Return TRUE if you think the bot achieved the user's goal. Return FALSE if you think the bot still has steps to take to achieve the goal.
 
   [GOAL]
   {{$goal}}

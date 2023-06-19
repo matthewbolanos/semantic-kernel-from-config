@@ -1,12 +1,8 @@
 using Microsoft.SemanticKernel;
 using PowerMatt.SKFromConfig.Extensions.Kernel;
 using PowerMatt.SKFromConfig.Extensions.Models;
-using PowerMatt.Gui.Views;
+using PowerMatt.Extensions.Gui.Views;
 using Terminal.Gui;
-using System.Collections.Concurrent;
-using static PowerMatt.SKFromConfig.Extensions.Agent.GoalThread;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using Microsoft.Extensions.Logging;
 
 namespace PowerMatt.SKFromConfig.Extensions.Agent;
@@ -14,16 +10,15 @@ namespace PowerMatt.SKFromConfig.Extensions.Agent;
 public class ConsoleAgent
 {
     private IKernel kernel;
-    private GoalOrchestrator orchestrator;
+    private IAgentOrchestrator orchestrator;
     private ChatView? chatView;
-    private ConcurrentDictionary<string, GoalThread> goalThreads = new ConcurrentDictionary<string, GoalThread> { };
     private ILogger<ConsoleAgent>? logger;
 
-    private ObservableCollection<string> history = new ObservableCollection<string>();
+    private List<string> history = new List<string>();
 
 
 
-    public ConsoleAgent(string agentDirectory, GoalOrchestrator orchestrator)
+    public ConsoleAgent(string agentDirectory, IAgentOrchestrator orchestrator)
     {
         // Create kernel builder
         var kernelBuilder = new KernelBuilder();
@@ -146,10 +141,6 @@ public class ConsoleAgent
 
         // Set main function
         this.orchestrator = orchestrator;
-
-        // Listen to conversation history
-        history.CollectionChanged += UpdateHistoryContext;
-
     }
 
     public void Start()
@@ -157,7 +148,7 @@ public class ConsoleAgent
         Action<string> onInput = async (string input) =>
         {
             history.Add("User: " + input);
-            await SendMessageToAllGoalThreadsAsync(input);
+            await SendMessageToOrchestrator(input);
         };
 
         Application.Init();
@@ -174,20 +165,6 @@ public class ConsoleAgent
         chatView!.Respond(message.Trim());
     }
 
-    private void UpdateHistoryContext(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == NotifyCollectionChangedAction.Add)
-        {
-            string history = GetConversationHistory();
-
-            // loop through all goal threads and update their context
-            foreach (var ct in goalThreads)
-            {
-                ct.Value.Context["history"] = history;
-            }
-        }
-    }
-
     private string GetConversationHistory()
     {
         string conversationHistory = "";
@@ -202,79 +179,44 @@ public class ConsoleAgent
         return conversationHistory;
     }
 
-    private async Task SendMessageToAllGoalThreadsAsync(string message)
+    private async Task SendMessageToOrchestrator(string message)
     {
-        // Check if any goal threads want the message
-        bool messageReceived = false;
-        var tasks = new List<Task>();
-        foreach (var ct in goalThreads)
+        var context = kernel.CreateNewContext();
+        context["history"] = GetConversationHistory();
+        context["input"] = message;
+
+        // Send message to goal thread
+        await foreach (var orchestratorMessage in orchestrator.ReceiveMessage(kernel, context))
         {
-            tasks.Add(Task.Run(async () =>
+            switch (orchestratorMessage.Type)
             {
-                if (await SendMessageToGoalThread(ct.Key, message))
-                {
-                    messageReceived = true;
-                }
+                case OrchestratorMessageType.REPLY_TO_USER:
+                    RespondToUser(orchestratorMessage.Message!);
+                    break;
+                    // TODO: Add additional types
             }
-            ));
-        }
-        await Task.WhenAll(tasks);
-
-        // If not, create a new goal thread
-        if (!messageReceived)
-        {
-            // create new context thread
-            var context = kernel.CreateNewContext();
-            context["GoalAchieved"] = "FALSE";
-            context["GoalCancelled"] = "FALSE";
-            context["History"] = GetConversationHistory();
-
-            var goalThread = new GoalThread(
-                kernel,
-                context,
-                orchestrator);
-
-            // Create random ID
-            string id = Guid.NewGuid().ToString();
-
-            // add context to concurrent dictionary
-            goalThreads.TryAdd(id, goalThread);
-            goalThread.StartAsync();
-
-            await SendMessageToGoalThread(id, message);
         }
     }
+}
 
-    public async Task<bool> SendMessageToGoalThread(string id, string message)
+
+public enum OrchestratorMessageType
+{
+    REPLY_TO_USER,
+
+    // TODO: Add additional types
+}
+
+
+
+public class OrchestratorMessage
+{
+    public OrchestratorMessageType Type { get; set; }
+    public string? Message { get; set; }
+
+    public OrchestratorMessage(OrchestratorMessageType type, string? message = null)
     {
-        bool messageReceived = false;
-
-        // Check if goal thread exists
-        if (goalThreads.TryGetValue(id, out var goalThread))
-        {
-            // Send message to goal thread
-            await foreach (var orchestratorMessage in goalThread.ReceiveMessage(message))
-            {
-                switch (orchestratorMessage.Type)
-                {
-                    case OrchestratorMessageType.USEFUL_MESSAGE:
-                        messageReceived = true;
-                        break;
-                    case OrchestratorMessageType.NOT_USEFUL_MESSAGE:
-                        break;
-                    case OrchestratorMessageType.REPLY_TO_USER:
-                        RespondToUser(orchestratorMessage.Message!);
-                        break;
-                    case OrchestratorMessageType.GOAL_ACHIEVED:
-                    case OrchestratorMessageType.GOAL_CANCELED:
-                    case OrchestratorMessageType.GOAL_NOT_ABLE_TO_COMPLETED:
-                    case OrchestratorMessageType.ERROR:
-                        goalThreads.TryRemove(id, out _);
-                        break;
-                }
-            }
-        }
-
-        return messageReceived;
+        Type = type;
+        Message = message;
     }
 }

@@ -1,6 +1,6 @@
 using Terminal.Gui;
 
-namespace PowerMatt.Gui.Views;
+namespace PowerMatt.Extensions.Gui.Views;
 
 public class ChatView : Window
 {

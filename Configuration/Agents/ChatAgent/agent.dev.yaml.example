@@ -1,0 +1,5 @@
+connections:
+  openAI:
+    apiKey: //your api key here//
+    orgId: //your org id here//
+logLevel: 0

@@ -1,6 +1,15 @@
-# Semantic Kernel C# Hello World Starter
+# Semantic Kernel From Config
 
-The `sk-csharp-hello-world` console application demonstrates how to execute a semantic function.
+This project demonstrates some proposed feature enhancements to Semantic Kernel to improve the development experience of using it.
+
+## Features
+
+![Features of repo](./FeaturesOfRepo.png)
+
+This repo highlights three main additional features to Semantic Kernel:
+1. Provides an opinionated folder structure to organize configuration files Semantic Kernel and its plugins. The folder structure notably adds a section for tests so users can author semantic tests for their agents and plugins.
+2. Provides an initial draft proposal of each configuration file. Pictured above is the _agent.yaml_ file which describes the top level configuration for Semantic Kernel. There are also yaml files for each custom plugin.
+3. Provides an chat GUI within the terminal for users to interact with their agents. This GUI is powered by the [Terminal.Gui](https://github.com/gui-cs/Terminal.Gui) library and makes it easier and faster to quickly test and debug agents along side the debug console.
 
 ## Prerequisites
 
@@ -9,69 +18,13 @@ The `sk-csharp-hello-world` console application demonstrates how to execute a se
   - [C#](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
   - [Semantic Kernel Tools](https://marketplace.visualstudio.com/items?itemName=ms-semantic-kernel.semantic-kernel)
 
-## Configuring the starter
+## Configuring the project
 
-The starter can be configured by using either:
+To configure the project, copy the [agent.dev.yaml.example](./Configuration/Agents/ChatAgent/agent.dev.yaml.example) file to _./Configuration/Agents/DocumentExpert/agent.dev.yaml_ and edit the file to add your OpenAI endpoint configuration.
 
-- Enter secrets at the command line with [.NET Secret Manager](#using-net-secret-manager)
-- Enter secrets in [appsettings.json](#using-appsettingsjson)
+## Running the project
 
-For Debugging the console application alone, we suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid the risk of leaking secrets into the repository, branches and pull requests.
-
-### Using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
-
-Configure an OpenAI endpoint
-
-```powershell
-cd sk-csharp-hello-world
-dotnet user-secrets set "serviceType" "OpenAI"
-dotnet user-secrets set "serviceId" "text-davinci-003"
-dotnet user-secrets set "deploymentOrModelId" "text-davinci-003"
-dotnet user-secrets set "apiKey" "... your OpenAI key ..."
-```
-
-Configure an Azure OpenAI endpoint
-
-```powershell
-cd sk-csharp-hello-world
-dotnet user-secrets set "serviceType" "AzureOpenAI"
-dotnet user-secrets set "serviceId" "text-davinci-003"
-dotnet user-secrets set "deploymentOrModelId" "text-davinci-003"
-dotnet user-secrets set "endpoint" "https:// ... your endpoint ... .openai.azure.com/"
-dotnet user-secrets set "apiKey" "... your Azure OpenAI key ..."
-```
-
-Configure the Semantic Kernel logging level
-
-```powershell
-dotnet user-secrets set "LogLevel" 0
-```
-
-Log levels:
-
-- 0 = Trace
-- 1 = Debug
-- 2 = Information
-- 3 = Warning
-- 4 = Error
-- 5 = Critical
-- 6 = None
-
-### Using appsettings.json
-
-Configure an OpenAI endpoint
-
-1. Copy [settings.json.openai-example](./config/appsettings.json.openai-example) to `./Config/appsettings.json`
-1. Edit the file to add your OpenAI endpoint configuration
-
-Configure an Azure OpenAI endpoint
-
-1. Copy [settings.json.azure-example](./config/appsettings.json.azure-example) to `./Config/appsettings.json`
-1. Edit the file to add your Azure OpenAI endpoint configuration
-
-## Running the starter
-
-To run the console application just hit `F5`.
+To run the console application just hit `F5` in VS Code.
 
 To build and run the console application from the terminal use the following commands:
 

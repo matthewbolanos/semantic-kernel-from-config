@@ -1,7 +1,7 @@
 using Terminal.Gui;
 using static Terminal.Gui.View;
 
-namespace PowerMatt.Gui.Views;
+namespace PowerMatt.Extensions.Gui.Views;
 
 public class MessageHistory
 {

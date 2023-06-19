@@ -17,7 +17,9 @@ var orchestrator = new SimpleOrchestrator(logger);
 // Build agent with configuration files and custom AI orchestrator
 string agentDirectory = Path.Combine(
             System.IO.Directory.GetCurrentDirectory(),
-            "Configuration/Agents/ChatAgent"
+            "./src/Sample/Configuration/Agents/ChatAgent"
         );
 ConsoleAgent agent = new ConsoleAgent(agentDirectory, orchestrator);
+
+// Start agent
 agent.Start();
